@@ -1,0 +1,51 @@
+ AS V1.42 Beta [Bld 115] - source file test.asm - page 1 - 17/11/2017 20:54:44
+
+
+       1/       0 :                     
+       2/       0 :                     	cpu 	sc/mp
+       3/       0 :                     
+       4/       0 :                     bootloader:
+       5/       0 : 08                  	nop 
+       6/       1 : 02                  	ccl
+       7/       2 : C4 36               	ldi 	0x36
+       8/       4 : EC 65               	dai 	0x65
+ AS V1.42 Beta [Bld 115] - source file test.asm - page 2 - 17/11/2017 20:54:44
+
+
+  symbol table (* = unused):
+  ------------------------
+
+*ARCHITECTURE :                                        x86_64-unknown-linux - |
+*BIGENDIAN :                      0 - | *BOOTLOADER :                     0 C |
+*BRANCHEXT :                      0 - | *CASESENSITIVE :                  0 - |
+*CONSTPI :        3.141592653589793 - | *DATE :                  17/11/2017 - |
+*FALSE :                          0 - | *FULLPMMU :                       1 - |
+*HAS64 :                          1 - | *HASDSP :                         0 - |
+*HASFPU :                         0 - | *HASPMMU :                        0 - |
+*INEXTMODE :                      0 - | *INLWORDMODE :                    0 - |
+*INMAXMODE :                      0 - | *INSRCMODE :                      0 - |
+*INSUPMODE :                      0 - | *LISTON :                         1 - |
+*MACEXP :                         1 - | *MOMCPU :                         C - |
+*MOMCPUNAME :                 SC/MP - | *NESTMAX :                      100 - |
+*PACKING :                        0 - | *PADDING :                        1 - |
+*RELAXED :                        0 - | *TIME :                    20:54:44 - |
+*TRUE :                           1 - | *VERSION :                     142F - |
+
+     29 symbols
+     29 unused symbols
+
+ AS V1.42 Beta [Bld 115] - source file test.asm - page 3 - 17/11/2017 20:54:44
+
+
+  codepages:
+  ----------
+
+STANDARD (0 changed characters)
+
+
+0.00 seconds assembly time
+
+      8 lines source file
+      1 pass
+      0 errors
+      0 warnings

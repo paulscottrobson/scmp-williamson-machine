@@ -1,0 +1,106 @@
+// **************************************************************************************
+//
+//					SC/MP CPU , 4k Range only, suitable for JS and C
+//					================================================
+//
+//	Does not do EAC correctly, doesn't matter as 4k
+//	Does not inc P0 correctly, same
+//	Does not implement OV, unused
+//
+// **************************************************************************************
+//
+//	@decadd 	substitute code to decadd mbr,a,cy/l -> a,cy/l in decimal
+// 	@binadd 	substitute code to add mbr,a,cy/l -> a,cy/l in binary
+//	@eacidx		substitute code to fetch and calculate EAC (indexed, without E) -> $mar
+//	@eacidxe	substitute code to fetch and calculate EAC (indexed, with E) -> $mar
+//	@eacaidxe	substitute code to fetch and calculate EAC (autoindexed, with E) -> $mar
+//	@fetch 		code to read next instruction into MBR.
+//	@p 			substitute  opcode & 3 for @p
+//	@upstatus	update $status from $status,$ov,$cyl and SA/B inputs
+//
+// **************************************************************************************
+
+01 		7 	"xae" 				$t16 = $ac;$ac = $e;$e = $t16
+
+C0-C3 	18	"ld %o(p@p)"		@eacidxe;$read();$ac = $mbr
+C4 		10	"ldi %c"			@fetch;$ac = $mbr
+C5-C7 	18 	"ld @%o(p@p)"		@eacaidxe;$read();$ac = $mbr
+40 		6 	"lde"				$ac = $e
+
+C8-CB 	22	"st %o(p@p)"		@eacidxe;$mbr = $ac;$write()
+CD-CF 	22	"st @%o(p@p)"		@eacaidxe;$mbr = $ac;$write()
+
+D0-D3 	18	"and %o(p@p)"		@eacidxe;$read();$ac = $ac & $mbr
+D4 		10 	"ani %c"			@fetch;$ac = $ac & $mbr
+D5-D7 	18 	"and @%o(p@p)"		@eacaidxe;$read();$ac = $ac & $mbr
+50 		6 	"ane"				$ac = $ac & $e
+
+D8-DB 	18	"or %o(p@p)"		@eacidxe;$read();$ac = $ac | $mbr
+DC 		10 	"ori %c"			@fetch;$ac = $ac | $mbr
+DD-DF 	18 	"or @%o(p@p)"		@eacaidxe;$read();$ac = $ac | $mbr
+58 		6 	"ore"				$ac = $ac | $e
+
+E0-E3 	18	"xor %o(p@p)"		@eacidxe;$read();$ac = $ac ^ $mbr
+E4 		10 	"xri %c"			@fetch;$ac = $ac ^ $mbr
+E5-E7 	18 	"xor @%o(p@p)"		@eacaidxe;$read();$ac = $ac ^ $mbr
+60 		6 	"xre"				$ac = $ac ^ $e
+
+E8-EB 	23	"dad %o(p@p)"		@eacidxe;$read();@decadd
+EC 		15 	"dai %c"			@fetch;;@decadd
+ED-EF 	23	"dad @%o(p@p)"		@eacaidxe;$read();@decadd
+68 		11 	"dae"				$mbr = $e;@decadd
+
+F0-F3 	19	"add %o(p@p)"		@eacidxe;$read();@binadd
+F4 		11 	"adi %c"			@fetch;;@binadd
+F5-F7 	19 	"add @%o(p@p)"		@eacaidxe;$read();@binadd
+70 		7 	"ade"				$mbr = $e;@binadd
+
+F8-FB 	20	"cad %o(p@p)"		@eacidxe;$read();$mbr = $mbr ^ 0xFF;@binadd
+FC 		12 	"cai %c"			@fetch;$mbr = $mbr ^ 0xFF;@binadd
+FD-FF 	20 	"cad @%o(p@p)"		@eacaidxe;$read();$mbr = $mbr ^ 0xFF;@binadd
+78 		8 	"cae"				$mbr = $e ^ 0xFF;@binadd
+
+// **************************************************************************************
+
+A8-AB 	22 	"ild %o(p@p)"		@eacidx;$read();$ac = ($mbr + 1) & 0xFF;$mbr = $ac;$write()
+B8-BB 	22 	"dld %o(p@p)"		@eacidx;$read();$ac = ($mbr - 1) & 0xFF;$mbr = $ac;$write()
+
+// **************************************************************************************
+
+90-93 	11 	"jmp %o(p@p)"		@eacidx;$p0 = $mar;
+94-97 	10 	"jp %o(p@p)"		@eacidx;if (($ac & 0x80) == 0x00) { $p0 = $mar; }
+98-9B 	10 	"jz %o(p@p)"		@eacidx;if ($ac == 0x00) { $p0 = $mar; }
+9C-9F 	10 	"jnz %o(p@p)"		@eacidx;if ($ac != 0x00) { $p0 = $mar; }
+
+// **************************************************************************************
+
+30-33 	8 	"xpal p@p"			$t16 = $ac;$ac = $p@p & 0xFF;$p@p = ($t16 & 0xFF)|($p@p & 0xFF00)
+34-37 	8 	"xpah p@p"			$t16 = $ac;$ac = ($p@p >> 8) & 0xFF;$p@p = ($p@p & 0x00FF)|($t16 << 8)
+3C-3F 	7 	"xppc p@p"			$t16 = $p0;$p0 = $p@p;$p@p = $t16
+
+// **************************************************************************************
+
+19 		5 	"sin"				$serialOut($e & 1);$e = ($e >> 1) | (($serialIn() != 0) ? 0x80:0x00);
+1C 		5 	"sr"				$ac = $ac >> 1
+1D 		5 	"srl"				$ac = ($ac >> 1) | ($cyl << 7)
+1E		5 	"rr"				$ac = (($ac >> 1) | ($ac << 7)) & 0xFF
+1F 		5 	"rrl"				$t16 = $ac | ($cyl << 8);$ac = ($t16 >> 1) & 0xFF;$cyl = $t16 & 1
+
+// **************************************************************************************
+
+00 		8 	"halt"				;
+02 		5 	"ccl"				$cyl = 0
+03 		5 	"scl"				$cyl = 1
+05 		6 	"ien"				$status = $status | 8;
+04 		6 	"dint"				$status = $status & 0xF7;
+06 		5 	"csa"				@upstatus;$ac = $status
+07 		6 	"cas"				$status = $ac;@upstatus;$setFlags($status & 7)
+08 		5 	"nop"				;
+
+// **************************************************************************************
+
+0F 		0 	"db 0f"				@upstatus
+
+// **************************************************************************************
+
+8F 		13 	"dly %c"			@fetch;$delay4cycles = $ac/2 + 128 * $mbr;$ac = 0xFF
